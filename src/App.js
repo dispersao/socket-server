@@ -1,24 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
-import './App.css';
+import OSC from 'osc-js'
 
 function App() {
+  const [isConnected, setIsConnected] = useState(false)
+  const [osc, setOsc] = useState()
+  const [receivedMessages, setReceivedMessages] = useState([])
+
+  useEffect(()=>{
+    const osc = new OSC()
+    setOsc(osc)
+    osc.open({ port: 9912 })
+
+    console.log(osc)
+
+    osc.on('open', () => {
+      const message = new OSC.Message('/test', 12.221, 'hello')
+      osc.send(message)
+      setIsConnected(true)
+    })
+
+    osc.on('/response', message => {
+      console.log(message.args)
+      setReceivedMessages((updatedMessages)=>{
+        return [...updatedMessages, message.args[0]]
+      })
+    })
+  }, [])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <div>{isConnected.toString()}</div>
+      <div>{receivedMessages.join('<br />')}</div>
     </div>
   );
 }
