@@ -1,38 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
-import OSC from 'osc-js'
+import React from 'react'
+import osc from 'osc/dist/osc-browser'
 
-function App() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [osc, setOsc] = useState()
-  const [receivedMessages, setReceivedMessages] = useState([])
 
-  useEffect(()=>{
-    const osc = new OSC()
-    setOsc(osc)
-    osc.open({ port: 9912 })
+const App = ()=> {
+  const port = new osc.WebSocketPort({
+    url: "ws://localhost:8081"
+  })
+  port.open()
 
-    console.log(osc)
-
-    osc.on('open', () => {
-      const message = new OSC.Message('/test', 12.221, 'hello')
-      osc.send(message)
-      setIsConnected(true)
+  port.on("ready", ready=> {
+    console.log('im readyyyyy')
+    port.on("message", function (oscMessage) {
+      console.log("message", JSON.stringify(oscMessage, undefined, 2))
     })
-
-    osc.on('/response', message => {
-      console.log(message.args)
-      setReceivedMessages((updatedMessages)=>{
-        return [...updatedMessages, message.args[0]]
-      })
+  })
+  const sendMessage = ()=> {
+    console.log(port)
+    port.send({
+      address: "/hello",
+      args: ["world"]
     })
-  }, [])
+  }
+
   return (
-    <div>
-      <div>{isConnected.toString()}</div>
-      <div>{receivedMessages.join('<br />')}</div>
-    </div>
-  );
+    <>
+      <button onClick={sendMessage}>
+        send message
+      </button>
+      
+    </>
+  )
 }
 
-export default App;
+export default App

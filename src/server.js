@@ -5,7 +5,7 @@ const osc = new OSC({ plugin: plugin })
 
 // listen for invoing messages
 
-osc.on('/test', message => {
+osc.on('/script', message => {
   console.log(message.args)
 })
 
